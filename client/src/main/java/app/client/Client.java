@@ -1,31 +1,78 @@
 package app.client;
 
-import java.io.BufferedReader;
+import app.MessageListener;
+import app.model.Message;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
-public class Client {
+public class Client implements MessageListener {
 
-    private static final String IP = "localhost";
-    private static final int port = 9090;
+	private static Long id = 0L;
 
-    private boolean running = false;
+	private ObjectInputStream reader;
+	private ObjectOutputStream writer;
 
+	public static Long getUserId() {
+		return id;
+	}
 
-    public void start() throws IOException {
-        Socket socket = new Socket(IP, port);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        while (true) {
-            System.out.println(reader.readLine());
-        }
-    }
+	public void start(InetSocketAddress address) {
+		try {
+			id++;
+			Socket socket = new Socket(address.getHostName(), address.getPort());
+			writer = new ObjectOutputStream(socket.getOutputStream());
+			reader = new ObjectInputStream(socket.getInputStream());
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
 
-    public void stop() {
-        running = false;
-    }
+	@Override
+	public Message receive() {
+		try {
+			return (Message) reader.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-    public boolean isRunning() {
-        return running;
-    }
+	@Override
+	public void send(Message message) {
+		try {
+			writer.writeObject(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				writer.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void ping() {
+		try {
+			writer.write(1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public boolean ready() {
+		try {
+			return reader.readInt() == 1;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 }

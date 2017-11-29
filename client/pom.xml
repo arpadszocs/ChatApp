@@ -11,5 +11,29 @@
 
     <artifactId>client</artifactId>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <targetPath>${project.build.outputDirectory}</targetPath>
+                <includes>
+                    <include>**/*.fxml</include>
+                    <include>**/*.css</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>chat</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
 
 </project>

@@ -1,43 +1,91 @@
 package app.server;
 
 import app.MessageListener;
+import app.model.Message;
+import app.model.User;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.util.List;
 
-public class ServerThread extends Thread {
+import static app.server.Server.ADDRESS;
+import static app.server.Server.PORT;
 
-    private Socket socket;
-    private final MessageListener messageListener;
+public class ServerThread extends Thread implements MessageListener {
 
-    private Scanner scanner = null;
+	private List<ServerThread> clients;
 
-    public ServerThread(Socket socket, MessageListener messageListener) {
-        this.socket = socket;
-        this.messageListener = messageListener;
-    }
+	private Socket clientSocket;
 
-    @Override
-    public void run() {
-        String response;
-        while (true) {
-            try {
-                scanner = new Scanner(socket.getInputStream());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if ((response = scanner.nextLine()) != null) {
-                System.out.println(response);
-                try {
-                    messageListener.accept(response);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+	private ObjectOutputStream writer;
+	private ObjectInputStream reader;
 
-            }
-        }
+	public ServerThread(Socket clientSocket, List<ServerThread> clients) {
+		this.clientSocket = clientSocket;
+		this.clients = clients;
+	}
 
+	@Override
+	public void run() {
+		super.run();
+		try {
+			clientSocket.setSoTimeout(1000);
+			writer = new ObjectOutputStream(clientSocket.getOutputStream());
+			reader = new ObjectInputStream(clientSocket.getInputStream());
+			writer.writeInt(1);
+			send(composeMessage("system", "Connected to: " + ADDRESS + ": " + PORT));
+			while (true) {
+				if (reader.readInt() == 1) {
+					for (ServerThread serverThread : clients) {
+						serverThread.send((Message) reader.readObject());
+					}
+				}
+				writer.writeInt(1);
+			}
+		} catch (IOException ex) {
+			System.out.println(clientSocket.getInetAddress().getHostAddress() + " has disconnected");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 
-    }
+	@Override
+	public Message receive() {
+		try {
+			return (Message) reader.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public void send(Message message) {
+		try {
+			writer.writeObject(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void ping() {
+		try {
+			writer.write(1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public boolean ready() {
+		return false;
+	}
+
+	private Message composeMessage(String userName, String message) {
+		return new Message(1L, new User(-1L, userName), LocalDateTime.now(), message);
+	}
 }
