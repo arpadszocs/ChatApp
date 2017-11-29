@@ -3,9 +3,6 @@ package app.model;
 import java.io.Serializable;
 
 /**
- *  ${TODO} Klassenbeschreibung
- *  
- *
  * @author Szocs, Arpad (EXTERN: msg DAVID)
  * @version $Id: User.java 31604 11/28/2017 10:31 Szocs, Arpad (EXTERN: msg DAVID) $
  * @since 11/28/2017

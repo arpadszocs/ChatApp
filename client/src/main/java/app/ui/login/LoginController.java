@@ -20,9 +20,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- *  ${TODO} Klassenbeschreibung
- *  
- *
  * @author Szocs, Arpad (EXTERN: msg DAVID)
  * @version $Id: LoginController.java 31604 11/28/2017 11:33 Szocs, Arpad (EXTERN: msg DAVID) $
  * @since 11/28/2017

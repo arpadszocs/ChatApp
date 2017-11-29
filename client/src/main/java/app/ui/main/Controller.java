@@ -20,9 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
 /**
- *  ${TODO} Klassenbeschreibung
- *  
- *
  * @author Szocs, Arpad (EXTERN: msg DAVID)
  * @version $Id: Controller.java 31604 11/27/2017 13:56 Szocs, Arpad (EXTERN: msg DAVID) $
  * @since 11/27/2017
